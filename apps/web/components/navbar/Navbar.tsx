@@ -1,31 +1,55 @@
-import { Trophy, Wallet } from "lucide-react";
-import Container from "@/components/layout/Container";
+"use client";
+
+import Link from "next/link";
+import { Wallet, User, Trophy } from "lucide-react";
+import GameSearch from "./GameSearch";
 
 export default function Navbar() {
   return (
-    <header className="border-b border-zinc-800 bg-zinc-950">
-      <Container className="flex h-16 items-center justify-between">
-        <h1 className="text-2xl font-bold text-yellow-400">
-          LuckyBro
-        </h1>
+    <header className="sticky top-0 z-50 border-b border-zinc-800/50 bg-black/70 backdrop-blur-xl">
+      <div className="flex h-20 items-center justify-between px-8">
+        {/* Left */}
+        <div className="flex items-center gap-10">
+          <Link href="/" className="flex items-center gap-2">
+            <Trophy size={28} className="text-yellow-400" />
+            <span className="text-2xl font-extrabold text-yellow-400">
+              LuckyBro
+            </span>
+          </Link>
 
-        <nav className="hidden gap-8 text-zinc-300 md:flex">
-          <a href="#">Games</a>
-          <a href="#">Leaderboard</a>
-          <a href="#">VIP</a>
-        </nav>
+          <nav className="hidden lg:flex gap-8">
+            <Link href="/" className="text-zinc-300 transition hover:text-yellow-400">
+              Games
+            </Link>
 
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-lg bg-yellow-500 px-4 py-2 font-semibold text-black">
+            <Link href="/" className="text-zinc-300 transition hover:text-yellow-400">
+              Live
+            </Link>
+
+            <Link href="/" className="text-zinc-300 transition hover:text-yellow-400">
+              Promotions
+            </Link>
+
+            <Link href="/" className="text-zinc-300 transition hover:text-yellow-400">
+              Leaderboard
+            </Link>
+          </nav>
+        </div>
+
+        {/* Right */}
+        <div className="flex items-center gap-4">
+         <GameSearch />
+
+          <button className="flex items-center gap-2 rounded-xl bg-yellow-500 px-5 py-3 font-semibold text-black transition hover:bg-yellow-400">
             <Wallet size={18} />
             Wallet
           </button>
 
-          <button className="rounded-lg border border-zinc-700 px-4 py-2 text-white">
-            Login
+          <button className="rounded-xl border border-zinc-700 p-3 transition hover:border-yellow-400">
+            <User size={18} />
           </button>
         </div>
-    </Container>
+      </div>
     </header>
   );
 }
