@@ -4,6 +4,8 @@ import Hero from "@/components/hero/Hero";
 import FeaturedBanner from "@/components/banner/FeaturedBanner";
 import GamesSection from "@/components/games/GamesSection";
 import StatsSection from "@/components/stats/StatsSection";
+import Footer from "@/components/footer/Footer";
+
 
 export default function Home() {
   return (
@@ -17,6 +19,7 @@ export default function Home() {
           <FeaturedBanner />
           <StatsSection />
           <GamesSection />
+          <Footer />
         </div>
       </div>
     </main>
