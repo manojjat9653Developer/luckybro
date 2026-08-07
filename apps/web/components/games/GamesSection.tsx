@@ -15,7 +15,7 @@ export default function GamesSection() {
             <GameCard
               key={game.id}
               title={game.title}
-              emoji={game.emoji}
+              image={game.image}
               description={game.description}
               route={`/games/${game.title.toLowerCase()}`}
             />

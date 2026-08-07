@@ -1,45 +1,38 @@
-export type Game = {
-  id: number;
-  title: string;
-  emoji: string;
-  description: string;
-};
-
-export const games: Game[] = [
+export const games = [
   {
     id: 1,
     title: "Crash",
-    emoji: "🚀",
-    description: "Predict the multiplier before it crashes.",
+    image: "/images/games/crash.png",
+    description: "Cash out before the multiplier crashes.",
   },
   {
     id: 2,
     title: "Mines",
-    emoji: "💣",
+    image: "/images/games/mines.png",
     description: "Avoid mines and collect rewards.",
   },
   {
     id: 3,
     title: "Dice",
-    emoji: "🎲",
-    description: "Roll the dice and win instantly.",
+    image: "/images/games/dice.png",
+    description: "Roll the dice and win big.",
   },
   {
     id: 4,
     title: "Plinko",
-    emoji: "🔵",
-    description: "Drop the ball and multiply your winnings.",
+    image: "/images/games/plinko.png",
+    description: "Drop the ball and hit multipliers.",
   },
   {
     id: 5,
     title: "Limbo",
-    emoji: "⚡",
-    description: "Choose a target multiplier.",
+    image: "/images/games/limbo.png",
+    description: "Predict the multiplier accurately.",
   },
   {
     id: 6,
     title: "Wheel",
-    emoji: "🎡",
-    description: "Spin the wheel and test your luck.",
+    image: "/images/games/wheel.png",
+    description: "Spin the wheel for exciting prizes.",
   },
 ];
