@@ -6,105 +6,170 @@ import {
   Menu,
   X,
   Wallet,
-  User,
   Trophy,
 } from "lucide-react";
+
 import GameSearch from "./GameSearch";
+import AuthButton from "@/components/auth/AuthButton";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <>
-      <header className="sticky top-0 z-50 border-b border-zinc-800 bg-black/70 backdrop-blur-xl">
-        <div className="flex h-20 items-center justify-between px-8">
+    <header className="w-full border-b border-zinc-800 bg-black">
+      {/* Desktop / Main Navbar */}
+      <div className="mx-auto flex min-h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
 
-          {/* Left */}
-          <div className="flex items-center gap-10">
-            <Link href="/" className="flex items-center gap-2">
-              <Trophy className="text-yellow-400" size={28} />
-              <span className="text-2xl font-bold text-yellow-400">
-                LuckyBro
-              </span>
-            </Link>
+        {/* Left */}
+        <div className="flex min-w-0 items-center gap-6 lg:gap-10">
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex shrink-0 items-center gap-2"
+          >
+            <Trophy
+              className="text-yellow-400"
+              size={26}
+            />
 
-            <nav className="hidden lg:flex gap-8">
-              <Link href="/">Games</Link>
-              <Link href="/">Live</Link>
-              <Link href="/">Promotions</Link>
-              <Link href="/">Leaderboard</Link>
-            </nav>
-          </div>
+            <span className="text-xl font-bold text-yellow-400 sm:text-2xl">
+              LuckyBro
+            </span>
+          </Link>
 
-          {/* Right */}
-          <div className="flex items-center gap-4">
-
-            <div className="hidden lg:block">
-              <GameSearch />
-            </div>
-
-            <button className="hidden lg:flex items-center gap-2 rounded-xl bg-yellow-500 px-5 py-3 font-semibold text-black">
-              <Wallet size={18} />
-              Wallet
-            </button>
-
-            <button className="hidden lg:flex rounded-xl border border-zinc-700 p-3">
-              <User size={18} />
-            </button>
-
-            <button
-              className="lg:hidden rounded-xl border border-zinc-700 p-3"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-            </button>
-
-          </div>
-        </div>
-      </header>
-
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-zinc-800 bg-zinc-950">
-          <nav className="flex flex-col gap-5 p-6">
-
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-6 lg:flex">
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm text-zinc-300 transition hover:text-yellow-400"
             >
               Games
             </Link>
 
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm text-zinc-300 transition hover:text-yellow-400"
             >
               Live
             </Link>
 
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm text-zinc-300 transition hover:text-yellow-400"
             >
               Promotions
             </Link>
 
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm text-zinc-300 transition hover:text-yellow-400"
+            >
+              Leaderboard
+            </Link>
+          </nav>
+        </div>
+
+        {/* Right */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+
+          {/* Desktop Search */}
+          <div className="hidden lg:block">
+            <GameSearch />
+          </div>
+
+          {/* Desktop Wallet */}
+          <button
+            type="button"
+            className="hidden items-center gap-2 rounded-xl bg-yellow-500 px-5 py-3 font-semibold text-black transition hover:bg-yellow-400 lg:flex"
+          >
+            <Wallet size={18} />
+            Wallet
+          </button>
+
+          {/* Desktop Auth */}
+          <div className="hidden lg:block">
+            <AuthButton />
+          </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="rounded-xl border border-zinc-700 p-3 text-white transition hover:border-yellow-400 lg:hidden"
+          >
+            {mobileMenuOpen ? (
+              <X size={22} />
+            ) : (
+              <Menu size={22} />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="border-t border-zinc-800 bg-zinc-950 lg:hidden">
+          <nav className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-5 sm:px-6">
+
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className="rounded-lg px-3 py-3 text-zinc-300 transition hover:bg-zinc-900 hover:text-yellow-400"
+            >
+              Games
+            </Link>
+
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className="rounded-lg px-3 py-3 text-zinc-300 transition hover:bg-zinc-900 hover:text-yellow-400"
+            >
+              Live
+            </Link>
+
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className="rounded-lg px-3 py-3 text-zinc-300 transition hover:bg-zinc-900 hover:text-yellow-400"
+            >
+              Promotions
+            </Link>
+
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className="rounded-lg px-3 py-3 text-zinc-300 transition hover:bg-zinc-900 hover:text-yellow-400"
             >
               Leaderboard
             </Link>
 
-            <GameSearch />
+            {/* Mobile Search */}
+            <div className="mt-3 w-full">
+              <GameSearch />
+            </div>
 
-            <button className="flex items-center justify-center gap-2 rounded-xl bg-yellow-500 py-3 font-semibold text-black">
+            {/* Mobile Wallet */}
+            <button
+              type="button"
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-yellow-500 py-3 font-semibold text-black transition hover:bg-yellow-400"
+            >
               <Wallet size={18} />
               Wallet
             </button>
 
+            {/* Mobile Auth */}
+            <div className="mt-3 flex justify-center">
+              <AuthButton />
+            </div>
           </nav>
         </div>
       )}
-    </>
+    </header>
   );
 }
