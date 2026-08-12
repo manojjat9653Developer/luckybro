@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, LogOut, ArrowLeft } from "lucide-react";
+import { User, Mail, LogOut, ArrowLeft, Pencil, X, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -18,10 +18,19 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [loggingOut, setLoggingOut] = useState(false);
 
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const response = await fetch("/api/auth/me", {
+        const response = await fetch("/api/profile", {
           method: "GET",
           credentials: "include",
           cache: "no-store",
@@ -40,6 +49,8 @@ export default function ProfilePage() {
         }
 
         setUser(data.user);
+        setName(data.user.name);
+        setEmail(data.user.email);
       } catch (error) {
         console.error("Failed to load profile:", error);
         router.replace("/");
@@ -50,6 +61,86 @@ export default function ProfilePage() {
 
     loadUser();
   }, [router]);
+
+  const startEditing = () => {
+    if (!user) return;
+
+    setName(user.name);
+    setEmail(user.email);
+    setMessage("");
+    setError("");
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    if (!user) return;
+
+    setName(user.name);
+    setEmail(user.email);
+    setMessage("");
+    setError("");
+    setEditing(false);
+  };
+
+  const handleSave = async () => {
+    if (saving) return;
+
+    setMessage("");
+    setError("");
+
+    const cleanName = name.trim();
+    const cleanEmail = email.trim().toLowerCase();
+
+    if (!cleanName || !cleanEmail) {
+      setError("Name and email are required.");
+      return;
+    }
+
+    if (cleanName.length < 2) {
+      setError("Name must be at least 2 characters.");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setError("Please enter a valid email.");
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: cleanName,
+          email: cleanEmail,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.message || "Failed to update profile.");
+        return;
+      }
+
+      setUser(data.user);
+      setName(data.user.name);
+      setEmail(data.user.email);
+
+      setMessage("Profile updated successfully.");
+      setEditing(false);
+    } catch (error) {
+      console.error("Update profile failed:", error);
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleLogout = async () => {
     if (loggingOut) return;
@@ -103,15 +194,43 @@ export default function ProfilePage() {
         </Link>
 
         {/* HEADER */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold sm:text-4xl">
-            My Profile
-          </h1>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold sm:text-4xl">
+              My Profile
+            </h1>
 
-          <p className="mt-2 text-sm text-zinc-500">
-            Manage your LuckyBro account.
-          </p>
+            <p className="mt-2 text-sm text-zinc-500">
+              Manage your LuckyBro account.
+            </p>
+          </div>
+
+          {!editing && (
+            <button
+              type="button"
+              onClick={startEditing}
+              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-zinc-700 px-4 py-2.5 text-sm font-medium text-white transition hover:border-yellow-400 hover:text-yellow-400"
+            >
+              <Pencil size={16} />
+              <span className="hidden sm:inline">Edit Profile</span>
+              <span className="sm:hidden">Edit</span>
+            </button>
+          )}
         </div>
+
+        {/* SUCCESS MESSAGE */}
+        {message && (
+          <div className="mb-5 rounded-xl border border-green-900/60 bg-green-950/20 px-4 py-3 text-sm text-green-400">
+            {message}
+          </div>
+        )}
+
+        {/* ERROR MESSAGE */}
+        {error && (
+          <div className="mb-5 rounded-xl border border-red-900/60 bg-red-950/20 px-4 py-3 text-sm text-red-400">
+            {error}
+          </div>
+        )}
 
         {/* PROFILE CARD */}
         <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950">
@@ -141,80 +260,169 @@ export default function ProfilePage() {
           {/* ACCOUNT DETAILS */}
           <div className="p-6 sm:p-8">
 
-            <h3 className="mb-5 text-lg font-semibold">
-              Account Details
-            </h3>
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-lg font-semibold">
+                Account Details
+              </h3>
 
-            <div className="space-y-4">
-
-              {/* NAME */}
-              <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
-                  <User size={18} className="text-yellow-400" />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-xs text-zinc-500">
-                    Full Name
-                  </p>
-
-                  <p className="mt-1 truncate font-medium">
-                    {user.name}
-                  </p>
-                </div>
-              </div>
-
-              {/* EMAIL */}
-              <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
-                  <Mail size={18} className="text-yellow-400" />
-                </div>
-
-                <div className="min-w-0">
-                  <p className="text-xs text-zinc-500">
-                    Email Address
-                  </p>
-
-                  <p className="mt-1 truncate font-medium">
-                    {user.email}
-                  </p>
-                </div>
-              </div>
-
-              {/* USER ID */}
-              <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-sm font-bold text-yellow-400">
-                  #
-                </div>
-
-                <div>
-                  <p className="text-xs text-zinc-500">
-                    User ID
-                  </p>
-
-                  <p className="mt-1 font-medium">
-                    #{user.id}
-                  </p>
-                </div>
-              </div>
-
+              {editing && (
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className="inline-flex items-center gap-2 text-sm text-zinc-400 transition hover:text-white"
+                >
+                  <X size={16} />
+                  Cancel
+                </button>
+              )}
             </div>
+
+            {editing ? (
+              /* EDIT FORM */
+              <div className="space-y-5">
+
+                {/* NAME INPUT */}
+                <div>
+                  <label
+                    htmlFor="profile-name"
+                    className="mb-2 block text-sm font-medium text-zinc-300"
+                  >
+                    Full Name
+                  </label>
+
+                  <div className="relative">
+                    <User
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400"
+                    />
+
+                    <input
+                      id="profile-name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      disabled={saving}
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-12 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-yellow-400 disabled:opacity-50"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </div>
+
+                {/* EMAIL INPUT */}
+                <div>
+                  <label
+                    htmlFor="profile-email"
+                    className="mb-2 block text-sm font-medium text-zinc-300"
+                  >
+                    Email Address
+                  </label>
+
+                  <div className="relative">
+                    <Mail
+                      size={18}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400"
+                    />
+
+                    <input
+                      id="profile-email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      disabled={saving}
+                      className="w-full rounded-xl border border-zinc-700 bg-zinc-900 px-12 py-3 text-white outline-none transition placeholder:text-zinc-600 focus:border-yellow-400 disabled:opacity-50"
+                      placeholder="Enter your email"
+                    />
+                  </div>
+                </div>
+
+                {/* SAVE */}
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-yellow-500 px-4 py-3 font-semibold text-black transition hover:bg-yellow-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <Save size={18} />
+
+                  {saving ? "Saving..." : "Save Changes"}
+                </button>
+
+              </div>
+            ) : (
+              /* VIEW MODE */
+              <div className="space-y-4">
+
+                {/* NAME */}
+                <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
+                    <User size={18} className="text-yellow-400" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-xs text-zinc-500">
+                      Full Name
+                    </p>
+
+                    <p className="mt-1 truncate font-medium">
+                      {user.name}
+                    </p>
+                  </div>
+                </div>
+
+                {/* EMAIL */}
+                <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800">
+                    <Mail size={18} className="text-yellow-400" />
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="text-xs text-zinc-500">
+                      Email Address
+                    </p>
+
+                    <p className="mt-1 truncate font-medium">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+
+                {/* USER ID */}
+                <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-sm font-bold text-yellow-400">
+                    #
+                  </div>
+
+                  <div>
+                    <p className="text-xs text-zinc-500">
+                      User ID
+                    </p>
+
+                    <p className="mt-1 font-medium">
+                      #{user.id}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            )}
 
             {/* LOGOUT */}
-            <div className="mt-8 border-t border-zinc-800 pt-6">
-              <button
-                type="button"
-                onClick={handleLogout}
-                disabled={loggingOut}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-900/60 bg-red-950/20 px-4 py-3 font-medium text-red-400 transition hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <LogOut size={18} />
+            {!editing && (
+              <div className="mt-8 border-t border-zinc-800 pt-6">
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  disabled={loggingOut}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border border-red-900/60 bg-red-950/20 px-4 py-3 font-medium text-red-400 transition hover:bg-red-950/40 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <LogOut size={18} />
 
-                {loggingOut
-                  ? "Logging out..."
-                  : "Logout"}
-              </button>
-            </div>
+                  {loggingOut
+                    ? "Logging out..."
+                    : "Logout"}
+                </button>
+              </div>
+            )}
 
           </div>
         </div>
