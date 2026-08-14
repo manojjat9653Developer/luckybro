@@ -9,6 +9,7 @@ type UserData = {
   id: number;
   name: string;
   email: string;
+  avatar: string | null;
 };
 
 export default function AuthButton() {
@@ -16,8 +17,8 @@ export default function AuthButton() {
   const [user, setUser] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  // Check logged-in user
   const checkUser = async () => {
     try {
       const response = await fetch("/api/auth/me", {
@@ -45,8 +46,11 @@ export default function AuthButton() {
     checkUser();
   }, []);
 
-  // Logout
   const handleLogout = async () => {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
     try {
       const response = await fetch("/api/auth/logout", {
         method: "POST",
@@ -61,10 +65,11 @@ export default function AuthButton() {
       }
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      setLoggingOut(false);
     }
   };
 
-  // Loading state
   if (loading) {
     return (
       <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-700">
@@ -73,45 +78,71 @@ export default function AuthButton() {
     );
   }
 
-  // Logged-in user
   if (user) {
+    const initial = user.name.charAt(0).toUpperCase();
+
     return (
       <div className="relative">
         {/* USER BUTTON */}
         <button
           type="button"
           onClick={() => setMenuOpen((prev) => !prev)}
+          aria-expanded={menuOpen}
+          aria-label="Open account menu"
           className="flex items-center gap-2 rounded-xl border border-zinc-700 px-2 py-2 text-white transition hover:border-yellow-400"
         >
-          {/* Avatar */}
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yellow-500 text-sm font-bold text-black">
-            {user.name.charAt(0).toUpperCase()}
+          {/* AVATAR */}
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-yellow-500 text-sm font-bold text-black">
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              initial
+            )}
           </div>
 
-          {/* Desktop username */}
+          {/* DESKTOP NAME */}
           <span className="hidden max-w-[140px] truncate whitespace-nowrap text-sm font-medium md:block">
             {user.name}
           </span>
 
-          {/* Mobile first name */}
+          {/* MOBILE NAME */}
           <span className="max-w-[70px] truncate whitespace-nowrap text-xs font-medium md:hidden">
             {user.name.split(" ")[0]}
           </span>
         </button>
 
-        {/* USER DROPDOWN */}
+        {/* DROPDOWN */}
         {menuOpen && (
-          <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-xl">
+          <div className="absolute right-0 top-full z-50 mt-2 w-60 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 shadow-xl">
 
             {/* USER INFO */}
-            <div className="border-b border-zinc-800 px-4 py-3">
-              <p className="truncate text-sm font-semibold text-white">
-                {user.name}
-              </p>
+            <div className="flex items-center gap-3 border-b border-zinc-800 px-4 py-3">
+              {/* DROPDOWN AVATAR */}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-yellow-500 text-sm font-bold text-black">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
 
-              <p className="mt-1 truncate text-xs text-zinc-500">
-                {user.email}
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-white">
+                  {user.name}
+                </p>
+
+                <p className="mt-1 truncate text-xs text-zinc-500">
+                  {user.email}
+                </p>
+              </div>
             </div>
 
             {/* MY PROFILE */}
@@ -131,10 +162,12 @@ export default function AuthButton() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-400 transition hover:bg-zinc-900"
+                disabled={loggingOut}
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-400 transition hover:bg-zinc-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <LogOut size={17} />
-                Logout
+
+                {loggingOut ? "Logging out..." : "Logout"}
               </button>
             </div>
           </div>
@@ -160,7 +193,6 @@ export default function AuthButton() {
         onOpenChange={(value) => {
           setOpen(value);
 
-          // Modal close hone ke baad session check
           if (!value) {
             checkUser();
           }

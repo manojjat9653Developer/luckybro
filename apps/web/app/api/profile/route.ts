@@ -38,11 +38,11 @@ export async function GET(request: Request) {
         id: userId,
       },
       select: {
-  id: true,
-  name: true,
-  email: true,
-  avatar: true,
-},
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+      },
     });
 
     if (!user) {
@@ -156,12 +156,12 @@ export async function PUT(request: Request) {
         name,
         email,
       },
-    select: {
-  id: true,
-  name: true,
-  email: true,
-  avatar: true,
-},
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+      },
     });
 
     return NextResponse.json({
