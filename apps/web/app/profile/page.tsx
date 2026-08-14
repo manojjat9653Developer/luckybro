@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { User, Mail, LogOut, ArrowLeft, Pencil, X, Save } from "lucide-react";
+import {
+  User,
+  Mail,
+  LogOut,
+  ArrowLeft,
+  Pencil,
+  X,
+  Save,
+  Camera,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +18,7 @@ type UserData = {
   id: number;
   name: string;
   email: string;
+  avatar: string | null;
 };
 
 export default function ProfilePage() {
@@ -23,6 +33,10 @@ export default function ProfilePage() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -80,6 +94,62 @@ export default function ProfilePage() {
     setMessage("");
     setError("");
     setEditing(false);
+  };
+
+  const handleAvatarChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    setMessage("");
+    setError("");
+
+    if (!file.type.startsWith("image/")) {
+      setError("Please select an image file.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Image must be smaller than 5MB.");
+      return;
+    }
+
+    setAvatarFile(file);
+
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarPreview(previewUrl);
+
+    setUploadingAvatar(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const response = await fetch("/api/profile/avatar", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.message || "Failed to upload avatar.");
+        return;
+      }
+
+      setUser(data.user);
+      setAvatarFile(null);
+      setAvatarPreview(null);
+      setMessage("Profile photo updated successfully.");
+    } catch (error) {
+      console.error("Avatar upload failed:", error);
+      setError("Something went wrong while uploading the photo.");
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleSave = async () => {
@@ -240,8 +310,34 @@ export default function ProfilePage() {
             <div className="flex items-center gap-4">
 
               {/* AVATAR */}
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-yellow-500 text-2xl font-bold text-black">
-                {initial}
+              <div className="relative h-20 w-20 shrink-0">
+                <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-yellow-500 text-2xl font-bold text-black">
+                  {avatarPreview || user.avatar ? (
+                    <img
+                      src={avatarPreview || user.avatar || ""}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    initial
+                  )}
+                </div>
+
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-2 border-zinc-950 bg-yellow-500 text-black transition hover:bg-yellow-400"
+                >
+                  <Camera size={15} />
+
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleAvatarChange}
+                    disabled={uploadingAvatar}
+                  />
+                </label>
               </div>
 
               <div className="min-w-0">

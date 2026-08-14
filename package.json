@@ -29,5 +29,8 @@
   "allowScripts": {
     "prisma@7.9.1": true,
     "@prisma/engines@7.9.1": true
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
   }
 }
